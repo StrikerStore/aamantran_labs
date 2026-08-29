@@ -34,8 +34,12 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <form className="card login-card" onSubmit={submit}>
-        <div className="card-head">
-          <span className="card-title">Template Lab</span>
+        <div className="login-brand">
+          <img src="/logo-80.png" alt="Aamantran" width="52" height="52" decoding="async" />
+          <span className="login-brand-text">
+            Template Lab
+            <small>Aamantran</small>
+          </span>
         </div>
         <div className="card-body">
           <p className="hint" style={{ marginTop: 0, marginBottom: 16 }}>

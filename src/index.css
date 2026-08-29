@@ -61,6 +61,10 @@
   /* Transitions */
   --t-fast: 140ms cubic-bezier(0.4, 0, 0.2, 1);
   --t-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Labels fade faster than the rail moves, so text is gone before the width
+     lands rather than being visibly squeezed on the way in. */
+  --t-collapse: 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-collapse-label: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --t-ui: background-color var(--t-fast),
           color var(--t-fast),
           border-color var(--t-fast),
@@ -173,32 +177,43 @@ code, .mono {
   position: sticky;
   top: 0;
   height: 100vh;
+  /* width resolves from --sidebar-w, which .collapsed reassigns; a length that
+     comes from a custom property still interpolates normally. */
+  transition: width var(--t-collapse), padding var(--t-collapse);
 }
 
+/* flex-wrap is what lets the toggle drop below the logo in the rail. Switching
+   flex-direction would do it too, but that property is discrete — it would flip
+   on frame one while the rail was still moving. Wrapping happens at the moment
+   the logo and toggle genuinely stop fitting side by side, partway through. */
 .brand {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 22px;
   padding: 0 6px;
+  transition: gap var(--t-collapse), padding var(--t-collapse);
 }
 .brand-mark {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
-  display: grid;
-  place-items: center;
   border-radius: var(--r-sm);
   background: var(--gold-soft);
   box-shadow: var(--shadow-sm);
-  font-size: 1.1rem;
+  padding: 4px;
+  object-fit: contain;
 }
 .brand-text {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.05rem;
   line-height: 1.2;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 .brand-text small {
   display: block;
@@ -210,6 +225,25 @@ code, .mono {
   text-transform: uppercase;
 }
 
+.sidebar-toggle {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: var(--t-ui);
+}
+.sidebar-toggle:hover { color: var(--gold-edge); background: var(--gold-soft); }
+.sidebar-toggle svg { transition: transform var(--t-collapse); }
+.shell.collapsed .sidebar-toggle svg { transform: rotate(180deg); }
+
 .nav-link {
   display: flex;
   align-items: center;
@@ -220,7 +254,12 @@ code, .mono {
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: var(--t-ui);
+  white-space: nowrap;
+  /* Repeats the --t-ui properties instead of using the shorthand: a bare
+     `transition` here would replace it and kill the hover fade. */
+  transition: background-color var(--t-fast), color var(--t-fast),
+              box-shadow var(--t-fast), gap var(--t-collapse),
+              padding var(--t-collapse);
 }
 .nav-link:hover { background: var(--bg-elevated); color: var(--text-primary); text-decoration: none; }
 .nav-link.active {
@@ -237,6 +276,8 @@ code, .mono {
   color: var(--text-muted);
   border-top: 1px solid var(--border-subtle);
 }
+.signed-in-as { margin-bottom: 10px; }
+.signout-btn { display: inline-flex; align-items: center; gap: 7px; }
 
 .main {
   flex: 1;
@@ -244,7 +285,111 @@ code, .mono {
   padding: 30px 32px 70px;
 }
 
+/* ── Collapsed rail ─────────────────────────────────────────────────────────
+   Desktop only. Below 860px the sidebar is already a horizontal bar, where a
+   rail makes no sense, so the toggle is hidden and .collapsed goes unread. */
+@media (min-width: 861px) {
+  .shell.collapsed { --sidebar-w: 72px; }
+
+  /* Text that disappears in the rail. `display: none` is not animatable — the
+     labels would blink out on frame one while the rail was still moving, and
+     that pop is most of what makes a collapse feel abrupt. Fading opacity and
+     collapsing max-width lets them retract with the rail instead. max-width
+     rather than width keeps the expanded size intrinsic. */
+  .brand-text,
+  .nav-label,
+  .signout-label {
+    overflow: hidden;
+    transition: opacity var(--t-collapse-label), max-width var(--t-collapse);
+    max-width: 160px;
+  }
+  .shell.collapsed .brand-text,
+  .shell.collapsed .nav-label,
+  .shell.collapsed .signout-label {
+    opacity: 0;
+    max-width: 0;
+  }
+
+  /* brand-text is the only block-level one, so zero width still leaves its
+     two lines of line-height behind as dead space in the rail. */
+  .shell.collapsed .brand-text { max-height: 0; }
+
+  /* Gaps have to close too, or the icons sit off-centre in the rail while the
+     now-zero-width labels still reserve their flex gap. */
+  .shell.collapsed .brand,
+  .shell.collapsed .nav-link,
+  .shell.collapsed .signout-btn { gap: 0; }
+
+  .shell.collapsed .brand { justify-content: center; padding: 0; }
+  .shell.collapsed .nav-link { justify-content: center; padding: 10px; }
+
+  /* max-width collapses as well as max-height: the footer becomes a flex row
+     in the rail, so leftover width here would shove the sign-out button
+     off-centre even with the text invisible. */
+  .signed-in-as {
+    overflow: hidden;
+    max-height: 40px;
+    max-width: 200px;
+    transition: opacity var(--t-collapse-label), max-height var(--t-collapse),
+                max-width var(--t-collapse), margin-bottom var(--t-collapse);
+  }
+  .shell.collapsed .signed-in-as {
+    opacity: 0;
+    max-height: 0;
+    max-width: 0;
+    margin-bottom: 0;
+  }
+
+  .shell.collapsed .sidebar { padding: 22px 12px; }
+  /* The footer is a block, so the inline-flex button would otherwise hug the
+     left edge while every other rail icon is centred. */
+  .shell.collapsed .sidebar-foot { display: flex; justify-content: center; }
+  .shell.collapsed .signout-btn { padding: 8px; }
+}
+
+/* ── Sidebar tooltips ───────────────────────────────────────────────────────
+   The rail is icons only, so hover needs to name them. `position: fixed` (not
+   absolute) so the tooltip escapes the 72px sidebar box rather than being
+   clipped by it. With `left` set and `top` left auto, it takes its static
+   position vertically, which inside a centred flex item is the item's centre —
+   so translateY(-50%) lands it on the icon with no JS measuring. */
+@media (min-width: 861px) and (hover: hover) {
+  .sidebar [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    left: calc(var(--sidebar-w) + 12px);
+    z-index: 300;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    background: var(--text-primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(46, 38, 24, 0.24);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-4px, -50%);
+    transition: opacity var(--t-fast), transform var(--t-fast);
+  }
+
+  /* Nav and sign-out labels are already on screen when expanded, so their
+     tooltips only earn their keep in the rail. The toggle is icon-only in
+     both states and always needs one. */
+  .shell.collapsed .sidebar .nav-link:hover::after,
+  .shell.collapsed .sidebar .nav-link:focus-visible::after,
+  .shell.collapsed .sidebar .signout-btn:hover::after,
+  .shell.collapsed .sidebar .signout-btn:focus-visible::after,
+  .sidebar-toggle:hover::after,
+  .sidebar-toggle:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
 @media (max-width: 860px) {
+  .sidebar-toggle { display: none; }
   .shell { flex-direction: column; }
   .sidebar {
     width: 100%;
@@ -646,6 +791,39 @@ code, .mono {
     var(--bg-base);
 }
 .login-card { width: 100%; max-width: 400px; box-shadow: var(--shadow-lg); }
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px 6px;
+  text-align: center;
+}
+.login-brand img {
+  border-radius: var(--r-md);
+  background: var(--gold-soft);
+  box-shadow: var(--shadow-sm);
+  padding: 6px;
+  object-fit: contain;
+}
+.login-brand-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.login-brand-text small {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
 
 /* ── Findings (schema vs HTML) ──────────────────────────────────── */
 
