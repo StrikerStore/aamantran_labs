@@ -90,7 +90,7 @@ be changed later.
 |---|---|
 | Lab loads, every API call fails with a CORS error | `LAB_URL` on the **backend** does not match the Lab's real origin |
 | Device preview panel is blank, console shows a frame-ancestors error | Same — `LAB_URL` wrong or unset on the backend |
-| Direct hit on `/sandbox` or `/preview` 404s | Start command is not `npm start`; `serve -s` provides the SPA fallback |
+| Direct hit on `/test` or `/guide` 404s | Start command is not `npm start`; `serve -s` provides the SPA fallback |
 | QR code will not open on a phone | `VITE_PUBLIC_INVITE_BASE_URL` points at localhost or an unreachable host |
 | API calls go to the Lab's own domain instead of the API | `VITE_API_URL` was missing **at build time** — redeploy after setting it |
 | Build fails on a missing `vite` | Railway pruned devDependencies; set `NPM_CONFIG_PRODUCTION=false` on the service |

@@ -35,7 +35,7 @@ export default function Login() {
     <div className="login-wrap">
       <form className="card login-card" onSubmit={submit}>
         <div className="card-head">
-          <span className="card-title">🧪 Template Lab</span>
+          <span className="card-title">Template Lab</span>
         </div>
         <div className="card-body">
           <p className="hint" style={{ marginTop: 0, marginBottom: 16 }}>

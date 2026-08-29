@@ -7,10 +7,9 @@ import { isAuthenticated } from './lib/auth';
 import Login     from './pages/Login';
 import Templates from './pages/Templates';
 
-// The preview page pulls in the QR library, so it is worth splitting out.
-const Sandbox = lazy(() => import('./pages/Sandbox'));
-const Preview = lazy(() => import('./pages/Preview'));
-const Guide   = lazy(() => import('./pages/Guide'));
+// The test page pulls in the QR library, so it is worth splitting out.
+const Test  = lazy(() => import('./pages/Test'));
+const Guide = lazy(() => import('./pages/Guide'));
 
 function ProtectedRoute({ children }) {
   const location = useLocation();
@@ -32,8 +31,7 @@ export default function App() {
 
           <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="templates" element={<Templates />} />
-            <Route path="sandbox"   element={<Suspense fallback={<RouteFallback />}><Sandbox /></Suspense>} />
-            <Route path="preview"   element={<Suspense fallback={<RouteFallback />}><Preview /></Suspense>} />
+            <Route path="test"      element={<Suspense fallback={<RouteFallback />}><Test /></Suspense>} />
             <Route path="guide"     element={<Suspense fallback={<RouteFallback />}><Guide /></Suspense>} />
           </Route>
 

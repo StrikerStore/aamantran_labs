@@ -14,7 +14,25 @@ import { absoluteInviteUrl } from '../lib/config';
  *   - **Re-upload** replaces the files of an existing one, keeping every seeded
  *     value. That is the loop a developer repeats all day, so it is one click
  *     on the row rather than a nested screen.
+ *
+ * Everything after the upload happens on the Test page.
  */
+
+/**
+ * Cache the schema-vs-HTML scan the upload just returned.
+ *
+ * There is no read-only endpoint for it, so without this the Test page could
+ * only offer "Suggest from HTML" to a developer who had saved a schema in that
+ * same session — which is exactly the developer who least needs it.
+ */
+function rememberAnalysis(templateId, analysis) {
+  if (!templateId || !analysis) return;
+  try {
+    localStorage.setItem(`lab_analysis_${templateId}`, JSON.stringify(analysis));
+  } catch {
+    /* Private mode or a full quota — suggestions are a convenience, not data. */
+  }
+}
 export default function Templates() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -58,6 +76,7 @@ export default function Templates() {
     try {
       const res = await api.templates.create(fd, setProgress);
       setAnalysis(res.analysis || null);
+      rememberAnalysis(res.template?.id, res.analysis);
       const seeded = res.seeded?.counts;
       toast(
         `Uploaded and seeded — ${seeded?.functions ?? 0} functions, `
@@ -83,7 +102,8 @@ export default function Templates() {
     try {
       const res = await api.templates.replace(templateId, fd, setProgress);
       setAnalysis(res.analysis || null);
-      toast('Files replaced — refresh the invite tab to see the change', 'success');
+      rememberAnalysis(templateId, res.analysis);
+      toast('Files replaced — reload the preview on the Test page', 'success');
       await load();
     } catch (err) {
       toast(err.message, 'error');
@@ -135,19 +155,17 @@ export default function Templates() {
           <div className="card-body">
             <CopyField label="Preview link (signed, no publishing needed)" value={absoluteInviteUrl(urls.preview)} />
             <div className="btn-row">
-              <button className="btn btn-primary" onClick={() => window.open(urls.preview, '_blank', 'noreferrer')}>
-                Open invite
+              <button className="btn btn-primary" onClick={() => navigate('/test')}>
+                Test template →
               </button>
-              <button className="btn" onClick={() => navigate('/preview')}>
-                Device preview →
-              </button>
-              <button className="btn" onClick={() => navigate('/sandbox')}>
-                Edit content →
+              <button className="btn" onClick={() => window.open(urls.preview, '_blank', 'noreferrer')}>
+                ↗ Open invite
               </button>
             </div>
             <p className="hint">
-              This link never changes. Re-upload a ZIP and just refresh the tab — the sandbox
-              renders your draft bundle directly, so there is no reload step.
+              This link never changes. Re-upload a ZIP and the sandbox renders your draft bundle
+              directly, so there is no reload step — scenarios, schema and device previews all
+              live on the Test page.
             </p>
           </div>
         </div>

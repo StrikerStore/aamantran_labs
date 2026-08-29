@@ -1,6 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { clearToken, getDeveloperInfo } from '../lib/auth';
 
+const NAV = [
+  { to: '/templates', icon: '📦', label: 'Templates' },
+  { to: '/test',      icon: '🧪', label: 'Test' },
+  { to: '/guide',     icon: '📖', label: 'Guide' },
+];
+
 export function Layout() {
   const navigate = useNavigate();
   const dev = getDeveloperInfo();
@@ -9,28 +15,26 @@ export function Layout() {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <span>🧪</span>
-          <span>
+          <span className="brand-mark">🧪</span>
+          <span className="brand-text">
             Template Lab
             <small>Aamantran</small>
           </span>
         </div>
 
-        <NavLink to="/templates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Templates
-        </NavLink>
-        <NavLink to="/sandbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Sandbox content
-        </NavLink>
-        <NavLink to="/preview" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Preview &amp; devices
-        </NavLink>
-        <NavLink to="/guide" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Guide
-        </NavLink>
+        {NAV.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
+            <span className="nav-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
 
         <div className="sidebar-foot">
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 10 }}>
             Signed in as <strong style={{ color: 'var(--text-secondary)' }}>{dev?.handle || '—'}</strong>
           </div>
           <button
@@ -42,7 +46,7 @@ export function Layout() {
         </div>
       </aside>
 
-      <main className="main">
+      <main className="main page-fade">
         <Outlet />
       </main>
     </div>

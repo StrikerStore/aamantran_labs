@@ -17,10 +17,14 @@ export default function Guide() {
           <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.9 }}>
             <li>Build locally against your <code>demo-data.js</code> harness.</li>
             <li>Zip the folder — <code>index.html</code>, CSS, JS, <code>assets/</code>. Leave the harness out.</li>
-            <li>Upload here. The sandbox seeds itself and gives you an invite link.</li>
-            <li>Paste your <code>fieldSchema</code> so your custom keys get sample values.</li>
-            <li>Fix → re-zip → <strong>Re-upload</strong> → refresh the invite tab. No reload step.</li>
-            <li>Walk the test scenarios, then scan the QR on a real phone.</li>
+            <li>Upload on <strong>Templates</strong>. The sandbox seeds itself and gives you an invite link.</li>
+            <li>
+              On <strong>Test</strong>, declare your <code>fieldSchema</code> so your custom keys get
+              sample values — <strong>Suggest from HTML</strong> fills in the keys it can find.
+            </li>
+            <li>Work through every scenario until all of them are ticked off.</li>
+            <li>Fix → re-zip → <strong>Re-upload</strong> → back to Test. No reload step.</li>
+            <li>Scan the QR on a real phone before you sign anything off.</li>
           </ol>
         </div>
       </div>
@@ -63,7 +67,7 @@ export default function Guide() {
         <div className="card-head"><span className="card-title">Before you hand off</span></div>
         <div className="card-body">
           <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.9 }}>
-            <li>Every scenario on the Sandbox page renders without gaps.</li>
+            <li>Every scenario on the Test page renders without gaps (checklist reads 7/7).</li>
             <li>No <code>demo-data.js</code>, <code>demo-helpers.js</code> or <code>preview.html</code> in the ZIP.</li>
             <li><code>index.html</code> references none of them.</li>
             <li>Asset paths are relative (<code>./assets/…</code>).</li>
